@@ -25,9 +25,9 @@ __version__ = get_distribution('techela').version
 app = Flask(__name__)
 
 # We need to get this information elsewhere
-# COURSE = 's17-06364'
 
-if sys.argv[0] != '-m':
+print(sys.argv, len(sys.argv))
+if (len(sys.argv) != 2):
     raise Exception('Did you run "python -m techela.app <course-label>"')
 
 # I assume you run the command like "python -m techela.app <course-label>" In
@@ -70,7 +70,7 @@ ASSIGNMENTURL = BASEURL + 'assignments/'
 SOLUTIONURL = BASEURL + 'solutions/'
 
 # This file contains user data, andrew id, name
-USERCONFIG = '{COURSEDIR}/techela.json'
+USERCONFIG = f'{COURSEDIR}/techela.json'
 
 # The flask app
 
@@ -107,13 +107,13 @@ def hello():
     # Should be setup now. Update the course info
     ONLINE = True
     try:
-        urllib.request.urlretrieve(f'{BASEURL}/course-data.json',
+        urllib.request.urlretrieve(f'{BASEURL}/blob/master/course-data.json',
                                    f'{COURSEDIR}/course-data.json')
     except urllib.error.HTTPError:
         print('Unable to download the course json file!!!!!!')
         ONLINE = False
 
-    with open(f'{COURSEDATA}/course-data.json', encoding='utf-8') as f:
+    with open(f'{COURSEDIR}/course-data.json', encoding='utf-8') as f:
         data = json.loads(f.read())
 
     # First get lecture status

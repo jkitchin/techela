@@ -35,4 +35,6 @@ threading.Timer(1.25, lambda: webbrowser.open(url)).start()
 # We start in the assignments directory
 os.chdir(os.path.expanduser(f'{techela.COURSEDIR}/assignments'))
 
-techela.app.run(port=port, debug=techela.DEBUG)
+techela.app.run(port=port, debug=True)
+print(os.path.expanduser(f'{techela.COURSEDIR}/assignments'),
+      os.getcwd())

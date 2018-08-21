@@ -18,7 +18,7 @@ d = {'title': 'Mathematical Modeling of Chemical Engineering Processes',
      'year': 2018,
      'semester': 'Fall',
      'submit-email': 'submiss.4glx1tp7z1ajg41f@u.box.com',
-     'course-url': 'https://github.com/jkitchin/f18-06623',
+     'course-url': 'https://raw.githubusercontent.com/jkitchin/f18-06623/master/',
      'instructor': 'John Kitchin',
      'instructor-email': 'jkitchin@andrew.cmu.edu',
      'admin-andrewids': ['jkitchin'],
@@ -50,8 +50,6 @@ The following files are expected to exist:
 For better or worse, techela uses a json data file to tell the flask app what to do. The json file is automatically created in a pre-commit hook. The hook is a Python program shown below.
 
 #+BEGIN_SRC python :tangle .git/hooks/pre-commit
-import json
-
 #!/usr/bin/env python
 import glob
 import json
