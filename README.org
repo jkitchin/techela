@@ -1,0 +1,148 @@
+#+TITLE: Techela - technology enhanced learning and assessment
+
+This project is a rewrite of the Emacs techela project (https://github.com/jkitchin/techela-emacs) using Python and a webbrowser instead. The code is currently specific to Carnegie Mellon University and relies on the following components:
+
+1. Github - the course content (syllabus, notes, assignments, solutions) are hosted in a publicly accessible GitHUB repository.
+2. Box.com - assignments are currently turned in and returned via email through a Box.com folder. The email is authenticated using Carnegie Mellon University mail servers. You should setup Box Sync to synchronize assignments and solutions.
+3. Python + Flask - techela is written as a Flask app that runs in a browser, and runs Python commands to open jupyter notebooks, submit assignments, etc.
+
+
+* Course setup in techela
+
+You need to setup a json file containing some course information. This data should be put into a file named <course-label>.json and added to the registered-courses directory. Here is an example.
+
+#+BEGIN_SRC python :tangle
+import json
+
+d = {'title': 'Mathematical Modeling of Chemical Engineering Processes',
+     'year': 2018,
+     'semester': 'Fall',
+     'submit-email': 'submiss.4glx1tp7z1ajg41f@u.box.com',
+     'course-url': 'https://github.com/jkitchin/f18-06623',
+     'instructor': 'John Kitchin',
+     'instructor-email': 'jkitchin@andrew.cmu.edu',
+     'admin-andrewids': ['jkitchin'],
+     'local-box-path': '~/Box Sync/f18-06623'}
+
+with open('registered-courses/f18-06623.json', 'w') as f:
+    f.write(json.dumps(d))
+#+END_SRC
+
+#+RESULTS:
+
+** Github repo
+
+The general idea is you will use git to push content to your course. That allows you to keep the course under version control, and to determine when it becomes available. Anything pushed becomes available.
+
+The following files are expected to exist:
+1. syllabus.org
+2. course-schedule.org
+3. announcements.org
+4. lectures directory
+   1. It is assumed that all committed ipynb files in this directory are lecture notes
+5. assignments directory
+   1. It is assumed that all committed ipynb files in this directory are assignments
+6. solutions directory
+   1. It is assumed that all committed ipynb files in this directory are solutions
+
+*** pre-commit hook
+
+For better or worse, techela uses a json data file to tell the flask app what to do. The json file is automatically created in a pre-commit hook. The hook is a Python program shown below.
+
+#+BEGIN_SRC python :tangle .git/hooks/pre-commit
+import json
+
+#!/usr/bin/env python
+import glob
+import json
+import os
+import subprocess
+import sys
+import time
+
+# This script updates the json file for this course prior to committing.
+
+def get_output(cmd):
+    p = subprocess.Popen(cmd.split(' '),
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    files = [f for f in out.decode("utf-8").strip().split('\n') if f.endswith('.ipynb')]
+    return files
+
+lectures = get_output('git ls-files lectures')
+assignments = get_output('git ls-files assignments')
+solutions = get_output('git ls-files solutions')
+
+# the assignments are like assignments/label.ipynb
+assignment_data = {}
+for assignment in assignments:
+    with open(assignment) as f:
+        j = json.loads(f.read())
+        duedate = None
+        md = j.get('metadata', None)
+        if md:
+            org = md.get('org', None)
+            if org:
+                duedate = org.get('DUEDATE', None)
+                grader = org.get('GRADER', None)
+                points  = org.get('POINTS', '?')
+                category = org.get('CATEGORY', '?')
+                label = os.path.splitext(os.path.split(assignment)[-1])[0]
+    assignment_data[assignment] = {'label': label,
+                                   'duedate': duedate,
+                                   'points': points,
+                                   'category': category,
+                                   'grader': grader}
+
+lecture_keywords = []
+for lf in lectures:
+    with open(lf) as f:
+        print(lf)
+        jd = json.loads(f.read())
+        md = jd['metadata']
+        org = md.get('org', {})
+        if org:
+            lecture_keywords += [org.get('KEYWORDS', '')]
+        else:
+            lecture_keywords += ['']
+
+
+if os.path.exists('announcements.html'):
+    with open('announcements.html') as f:
+        announcements = f.read()
+else:
+    announcements = ''
+
+data = {'lectures': lectures,
+        'lecture_keywords': lecture_keywords,
+	'assignments': assignment_data,
+        'solutions': solutions,
+        'announcements': announcements}
+
+with open('course-data.json', 'w') as f:
+    f.write(json.dumps(data, indent=4))
+
+os.system('git add course-data.json')
+
+sys.exit(0)
+
+#+END_SRC
+
+** TODO Box.com
+
+The box folder should have:
+
+local-box-folder
+    - roster.csv
+    - submissions (this is the folder you want the email for)
+
+* Using techela
+
+Students will run one command:
+
+#+BEGIN_SRC sh
+techela <course-label>
+#+END_SRC
+
+This will launch their browser

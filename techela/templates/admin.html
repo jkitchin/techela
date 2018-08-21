@@ -1,0 +1,62 @@
+<!doctype html>
+<head>
+<script type="text/javascript" src="{{url_for('static', filename='jquery-latest.js')}}/"></script>
+<script type="text/javascript" src="{{url_for('static', filename='jquery.tablesorter.js')}}"></script>
+
+<script>
+  $(document).ready(function()
+    {
+  $("table").tablesorter({widgets:['zebra'], sortList: [[2, -1]]} );
+    }
+  );
+</script>
+
+<link rel="stylesheet" href="{{url_for('static', filename='themes/blue/style.css')}}" type="text/css" media="print, projection, screen" />
+
+
+</head>
+
+<title>{{COURSE}} - Techela in a flask</title>
+
+{% if not ONLINE %}
+<font color="red" size=110%>
+  WARNING: You do not appear to be online! You will not be able to download new files or submit assignments.
+  </font>
+{% endif %}
+
+<h1>{{COURSE}} - Admin</h1>
+You registered as {{NAME}} ({{ANDREWID}}) (<a href="/setup">Change registration information</a>)<br>
+Your course files are in <a href="/coursedir">{{COURSEDIR}}</a> <br>
+
+<a href="https://github.com/jkitchin/s17-06364/blob/master/syllabus.org">Syllabus</a><br>
+<a href="https://github.com/jkitchin/s17-06364/blob/master/course-schedule.org">Course schedule</a>
+<br>
+<a href="/new">New Notebook</a> (opens in a new browser tab).
+
+<br>
+<a href="/roster">Roster</a>
+
+<h2>Assignments</h2>
+Click on these links to collect and open a grade sheet for each assignment.
+<table class=tablesorter>
+  <thead>
+    <th>Label (click to collect)</th>
+    <th>Solution (in Box)</th>
+    <th>Duedate</th>
+    <th>Grader</th>
+    <th>Status</th>
+  </thead>
+  {% for label, duedate, grader, status, color, solution in assignments4templates %}
+  <tr>
+    <td><a title="click to collect and grade" href="/grade-assignment/{{ label }}">{{ label }}</a></td>
+    {% if exists(solution) %}
+    <td><a href="/admin-solution/{{ label }}">{{ label }}</a></td>
+    {% else %}
+    <td> No solution available yet</td>
+    {% endif %}
+    <td><font color="{{color}}">{{duedate}}</font></td>
+    <td><font color="{{color}}">{{grader}}</font></td>
+    <td><font color="{{color}}">{{status}}</font></td>
+    </tr>
+  {% endfor %}
+</table>

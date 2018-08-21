@@ -1,0 +1,113 @@
+<!doctype html>
+<head>
+<script type="text/javascript" src="{{url_for('static', filename='jquery-latest.js')}}/"></script>
+<script type="text/javascript" src="{{url_for('static', filename='jquery.tablesorter.js')}}"></script>
+
+<script>
+  $(document).ready(function()
+    {
+  $("table").tablesorter({widgets:['zebra'], sortList: [[2, -1]]} );
+    }
+  );
+</script>
+
+<link rel="stylesheet" href="{{url_for('static', filename='themes/blue/style.css')}}" type="text/css" media="print, projection, screen" />
+
+
+</head>
+<title>{{COURSE}} - Techela in a flask</title>
+
+{% if not ONLINE %}
+<font color="red" size=110%>
+  WARNING: You do not appear to be online! You will not be able to download new files or submit assignments.
+  </font>
+{% endif %}
+
+{% if ANDREWID in COURSEDATA['admin-andrewids'] %}
+<br><a href="/admin">Admin</a><br> <a href="/debug">debug</a>
+{% endif %}
+
+<h1>{{COURSE}} - Techela in a flask (version {{version}}) </h1>
+You registered as {{NAME}} ({{ANDREWID}}) (<a href="/setup">Change registration information</a>)<br>
+Your course files are in <a href="/coursedir">{{COURSEDIR}}</a> <br>
+
+<a href="{{COURSEDATA['course-url']}}/blob/master/syllabus.org">Syllabus</a><br>
+<a href="{{COURSEDATA['course-url']}}/blob/master/course-schedule.org">Course schedule</a>
+<br>
+<a href="/new">New Notebook</a> (opens in a new browser tab).
+
+{{announcements | safe}}
+
+<table border=1 width="800">
+  <tr>
+    <td width="400">
+<h2> Your Lectures </h2>
+These are your local copies. You can edit them and add your own notes.
+
+<ul>
+{% for label, status,keywords in lectures %}
+<li><a href="/lecture/{{ label }}">{{ label }}</a> ({{ status | safe}})</li>
+{% endfor %}
+</ul>
+</td>
+<td>
+<h2> Course Lectures </h2>
+These are the notes that I have used in class. Each time you open one, it will download the latest copy of the notes, so anything you change in these files will be lost each time you open the link.
+
+<ul>
+{% for label, status, keywords in lectures %}
+<li><a href="/course-lecture/{{ label }}">{{ label }}</a>  {{keywords}}
+{% endfor %}
+</ul>
+</td>
+</tr>
+</table>
+
+<h2>Assignments</h2>
+<a href="/solution/example">Example solution</a><br><br>
+<table id="assignments" class=tablesorter>
+  <thead>
+    <th>label</th>
+    <th>status</th>
+    <th>due date</th>
+    <th>submit</th>
+    <th>turned in</th>
+    <th>solution</th>
+  </thead>
+  {% for label, path, status, color, duedate, turnedin, solution in assignments4templates %}
+  <tr>
+    <td><a href="/assignment/{{ label }}">{{ label }}</a></td>
+    <td>{{ status | safe }}</td>
+    <td><font color="{{color}}">{{duedate}}</font></td>
+    <td><a href="/submit/{{ label }}">Submit</a></td>
+    <td>{{turnedin}}</td>
+    <td>
+      {% if solution %}
+      <a href="/solution/{{solution}}">{{solution}}</a>
+      {% else %}
+      Not available yet
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+
+<h2>Graded assignments</h2>
+When you get your graded assignment returned by email, save the attachment to this directory <a href="/coursedir?path=graded-assignments">{{COURSEDIR}}graded-assignments</a>. They will appear below for you to open.
+
+<table id="assignments" class=tablesorter>
+  <thead>
+    <th>filename</th>
+    <th>grade</th>
+    <th>graded-by</th>
+  </thead>
+  {% for fname, grade, grader in graded_assignments %}
+  <tr>
+    <td><a href="/graded-assignment/{{ fname }}">{{ fname }}</a></td>
+    <td>{{grade}}</td>
+    <td>{{grader}}</td>
+
+  </tr>
+  {% endfor %}
+</table>

@@ -1,0 +1,40 @@
+<!doctype html>
+<title>{{COURSE}} - Techela in a flask</title>
+<head>
+<script type="text/javascript" src="{{url_for('static', filename='jquery-latest.js')}}/"></script>
+<script type="text/javascript" src="{{url_for('static', filename='jquery.tablesorter.js')}}"></script>
+
+<script>
+  $(document).ready(function()
+    {
+  $("table").tablesorter({widgets:['zebra'], sortList: [[2, -1]]} );
+    }
+  );
+</script>
+
+<link rel="stylesheet" href="{{url_for('static', filename='themes/blue/style.css')}}" type="text/css" media="print, projection, screen" />
+
+</head>
+
+
+<h1>{{COURSE}} - Roster</h1>
+
+<a href="mailto:{{ANDREWID}}@andrew.cmu.edu?cc=jkitchin@andrew.cmu.edu&bcc={% for d in roster[1:]%}{{d['Email']}}{% if not loop.last %}{{','}}{% endif %}{% endfor %}&subject=[s17-06364]">Email class</a>
+
+
+<table class=tablesorter>
+  <thead>
+    <th>First Name</th>
+    <th>Last Name</th>
+    <th>email</th>
+    <th>Gradebook</th>
+  </thead>
+  {% for d in roster[1:] %}
+  <tr>
+    <td> {{ d['Preferred/First Name'] }}</td>
+    <td> {{ d['Last Name'] }}</td>
+    <td><a title="Click to send email" href="mailto:{{d['Email']}}">{{d['Email']}}</a></td>
+    <td><a href="\gradebook_one\{{d['Andrew ID']}}">Gradebook<a/></td>
+    </tr>
+  {% endfor %}
+</table>
