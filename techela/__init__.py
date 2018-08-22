@@ -63,7 +63,7 @@ except urllib.error.HTTPError:
     sys.exit()
 
 BOX_EMAIL = COURSEDATA['submit-email']
-BASEURL = COURSEDATA['course-url']
+BASEURL = COURSEDATA['course-raw-url']
 
 LECTUREURL = BASEURL + 'lectures/'
 ASSIGNMENTURL = BASEURL + 'assignments/'
@@ -107,9 +107,10 @@ def hello():
     # Should be setup now. Update the course info
     ONLINE = True
     try:
-        urllib.request.urlretrieve(f'{BASEURL}/blob/master/course-data.json',
+        urllib.request.urlretrieve(f'{BASEURL}/course-data.json',
                                    f'{COURSEDIR}/course-data.json')
     except urllib.error.HTTPError:
+        print(f'{BASEURL}/blob/master/course-data.json')
         print('Unable to download the course json file!!!!!!')
         ONLINE = False
 
