@@ -1,5 +1,6 @@
 {
     "title": "Mathematical Modeling of Chemical Engineering Processes",
+    "label": "f18-06623",
     "year": 2018,
     "semester": "Fall",
     "submit-email": "submiss.4glx1tp7z1ajg41f@u.box.com",
@@ -7,8 +8,15 @@
     "course-raw-url": "https://raw.githubusercontent.com/jkitchin/f18-06623/master/",
     "instructor": "John Kitchin",
     "instructor-email": "jkitchin@andrew.cmu.edu",
+    "admin-names": [
+        "John Kitchin",
+        "Mingjie Liu",
+        "Noriyuki Yoshio"
+    ],
     "admin-andrewids": [
-        "jkitchin"
+        "jkitchin",
+        "mingjie1",
+        "nyoshio"
     ],
     "local-box-path": "~/Box Sync/f18-06623"
 }
