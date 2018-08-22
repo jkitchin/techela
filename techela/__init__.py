@@ -53,9 +53,9 @@ try:
     if not os.path.isdir(COURSEDIR + 'graded-assignments/'):
         os.makedirs(COURSEDIR + 'graded-assignments/')
 
-    shutil.copyfile(local_filename, COURSEDIR + f'{COURSE}.json')
+    shutil.copyfile(local_filename, COURSEDIR + 'course-data.json')
 
-    with open(COURSEDIR + f'{COURSE}.json') as f:
+    with open(COURSEDIR + f'course-data.json') as f:
         COURSEDATA = json.loads(f.read())
 
 except urllib.error.HTTPError:
