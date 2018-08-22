@@ -3,11 +3,16 @@
 This project is a rewrite of the Emacs techela project (https://github.com/jkitchin/techela-emacs) using Python and a webbrowser instead. The code is currently specific to Carnegie Mellon University and relies on the following components:
 
 1. Github - the course content (syllabus, notes, assignments, solutions) are hosted in a publicly accessible GitHUB repository.
-2. Box.com - assignments are currently turned in and returned via email through a Box.com folder. The email is authenticated using Carnegie Mellon University mail servers. You should setup Box Sync to synchronize assignments and solutions.
+2. Box.com - assignments are currently turned in and returned via email through a Box.com folder. The email is authenticated using Carnegie Mellon University mail servers. You should setup Box Sync to synchronize assignments and solutions. This folder contains "private" things, such as the roster, graded assignments, etc. that noone but the instructors and Tas should see.
 3. Python + Flask - techela is written as a Flask app that runs in a browser, and runs Python commands to open jupyter notebooks, submit assignments, etc.
 
 
 * Course setup in techela
+
+** Registering your course in techela
+   :PROPERTIES:
+   :ID:       E3FCABBB-9465-410E-8838-199CD733B61A
+   :END:
 
 You need to setup a json file containing some course information. This data should be put into a file named <course-label>.json and added to the registered-courses directory. Here is an example.
 
@@ -15,24 +20,33 @@ You need to setup a json file containing some course information. This data shou
 import json
 
 d = {'title': 'Mathematical Modeling of Chemical Engineering Processes',
+     'label': 'f18-06623',
      'year': 2018,
      'semester': 'Fall',
      'submit-email': 'submiss.4glx1tp7z1ajg41f@u.box.com',
-     'course-url': 'https://raw.githubusercontent.com/jkitchin/f18-06623/master/',
+     'course-url': 'https://github.com/jkitchin/f18-06623/',
+     'course-raw-url': 'https://raw.githubusercontent.com/jkitchin/f18-06623/master/',
      'instructor': 'John Kitchin',
      'instructor-email': 'jkitchin@andrew.cmu.edu',
-     'admin-andrewids': ['jkitchin'],
+     'admin-names': ["John Kitchin", "Mingjie Liu", "Noriyuki Yoshio"],
+     'admin-andrewids': ['jkitchin', 'mingjie1', 'nyoshio'],
      'local-box-path': '~/Box Sync/f18-06623'}
 
 with open('registered-courses/f18-06623.json', 'w') as f:
-    f.write(json.dumps(d))
+    f.write(json.dumps(d, indent=4))
 #+END_SRC
 
 #+RESULTS:
 
+This file must be added to https://github.com/jkitchin/techela/tree/master/registered-courses.
+
+The <course-label> will be used to construct various paths, so it probably should not have spaces or other problematic characters.
+
 ** Github repo
 
-The general idea is you will use git to push content to your course. That allows you to keep the course under version control, and to determine when it becomes available. Anything pushed becomes available.
+The general idea is you will use git to push content that can be visible to all your students to your course. That allows you to keep the course under version control, and to determine when it becomes available. Anything pushed becomes available.
+
+You should create a new git repo at the location defined in the 'course-url' data from [[id:E3FCABBB-9465-410E-8838-199CD733B61A][Registering your course in techela]].
 
 The following files are expected to exist:
 1. syllabus.org
@@ -45,9 +59,14 @@ The following files are expected to exist:
 6. solutions directory
    1. It is assumed that all committed ipynb files in this directory are solutions
 
-*** pre-commit hook
+You should use a [[id:3E31E5FA-C89D-47E9-BCDD-49587EC131F6][pre-commit hook]] to automatically create a course-data.json file that is an integral part of the Flask app. It will contain all the relevant data required to build the web-pages.
 
-For better or worse, techela uses a json data file to tell the flask app what to do. The json file is automatically created in a pre-commit hook. The hook is a Python program shown below.
+*** pre-commit hook
+    :PROPERTIES:
+    :ID:       3E31E5FA-C89D-47E9-BCDD-49587EC131F6
+    :END:
+
+For better or worse, techela uses a json data file (course-data.json) to tell the flask app what to do. The json file is automatically created in a pre-commit hook. The hook is a Python program shown below.
 
 #+BEGIN_SRC python :tangle .git/hooks/pre-commit
 #!/usr/bin/env python
@@ -118,29 +137,87 @@ data = {'lectures': lectures,
         'solutions': solutions,
         'announcements': announcements}
 
-with open('course-data.json', 'w') as f:
+with open('course-files.json', 'w') as f:
     f.write(json.dumps(data, indent=4))
 
-os.system('git add course-data.json')
+os.system('git add course-files.json')
 
 sys.exit(0)
 
 #+END_SRC
 
-** TODO Box.com
+** Box.com admin folder
+
+This folder contains information that should not be distributed to the students. They will email their assignments to a special email that uploads attachments to the submissions folder.
 
 The box folder should have:
 
-local-box-folder
+local-box-admin-folder
     - roster.csv
     - submissions (this is the folder you want the email for)
+    - solutions
 
-* Using techela
+You should set this folder to sync automatically to your local machine, and make sure that it syncs to the location specified in 'local-box-path' in [[id:E3FCABBB-9465-410E-8838-199CD733B61A][Registering your course in techela]].
+
+The flask app has an admin page for collecting, grading and returning assignments
+
+* Using techela for students
 
 Students will run one command:
 
 #+BEGIN_SRC sh
-techela <course-label>
+python -m techela.app <course-label>
 #+END_SRC
 
-This will launch their browser
+This will launch their browser. They will be prompted to register their andrewid and email address, and then will see the home page for the course. They will typically just click on links to open lecture notes, assignments, etc. as well as to turn in assignments. The assignments will be turned in and returned by email.
+
+* Using techela for instructors
+
+** announcements
+
+You can put announcements into the announcements.org file, and then generate an HTML version of that file. Alternatively, just make an announcements.html file with the contents you want to show.
+
+** Lecture notes
+
+I prepare the lecture notes in org-mode, and then export them to ipython notebooks. When you are ready to make them available, you simply commit the notebook to the git repo and push it to github. This will automatically update the course-data.json file and the notes should become available the next time students open the course.
+
+** Assignments/solutions
+
+I create assignments in org-mode, and export them to ipython notebooks. Basically, one heading is one problem, and you should assign several properties to the heading:
+
+1. DUEDATE in the form DD-MM-YYYY HH:mm:ss
+2. POINTS - how many points this problem is worth
+3. RUBRIC - which rubric to use
+4. TYPE - this is the category, e.g. homework, exam-1, quiz
+5. LABEL - a name for the assignment
+6. GRADER - Name of the person responsible for grading
+
+The point of these is that this information is saved in machine-readable form in the notebooks, and integrated into the browser, and gradebook.
+
+** Collecting, grading and returning assignments
+
+Instructors should also run
+
+#+BEGIN_SRC sh
+python -m techela.app <course-label>
+#+END_SRC
+
+They will also register their andrewid and names. When their andrewid is listed in the course information, they will see an admin link that will use information in the Box admin folder.
+
+*** Collecting assignments
+
+From the admin page, you can click on a label to collect the assignment. This will copy the assignments from the submissions folder into the assignments and assignments-archive folders. The assignments folder contains copies of the assignments that will be graded, and the assignments-archive folder is just to keep a copy of the files that are unaltered.
+
+*** Grading assignments
+
+After the assignments are collected, you will see a page showing links to each assignment file. You can click on the link to open the file for grading.
+
+techela provides some extensions to the jupyter notebook to facilitate grading. You can press C to enter a comment. After you are ready to grade, you press G to enter the grades. You will be prompted for a technical grade, and for a presentation grade. You should enter letter grades for these. The total grade will be automatically computed and stored in the notebook.
+
+*** Returning assignments
+
+After you are done grading all the assignments, you can post the solution to the public github site, and then click on the Return all assignments link on the assignment page.
+
+*** Updating the roster
+
+You just download a new roster from S3 and rename it as roster.csv in the admin folder.
