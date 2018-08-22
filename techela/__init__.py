@@ -107,14 +107,14 @@ def hello():
     # Should be setup now. Update the course info
     ONLINE = True
     try:
-        urllib.request.urlretrieve(f'{BASEURL}/course-data.json',
-                                   f'{COURSEDIR}/course-data.json')
+        urllib.request.urlretrieve(f'{BASEURL}/course-files.json',
+                                   f'{COURSEDIR}/course-files.json')
     except urllib.error.HTTPError:
-        print(f'{BASEURL}/blob/master/course-data.json')
+        print(f'{BASEURL}/blob/master/course-files.json')
         print('Unable to download the course json file!!!!!!')
         ONLINE = False
 
-    with open(f'{COURSEDIR}/course-data.json', encoding='utf-8') as f:
+    with open(f'{COURSEDIR}/course-files.json', encoding='utf-8') as f:
         data = json.loads(f.read())
 
     # First get lecture status
@@ -474,8 +474,8 @@ def admin():
 
     ONLINE = True
     try:
-        urllib.request.urlretrieve(f'{BASEURL}/course-data.json',
-                                   f'{COURSEDIR}/course-data.json')
+        urllib.request.urlretrieve(f'{BASEURL}/course-files.json',
+                                   f'{COURSEDIR}/course-files.json')
     except urllib.error.HTTPError:
         print('Unable to download the course json file!!!!!!')
         ONLINE = False
@@ -485,7 +485,7 @@ def admin():
         ANDREWID = data['ANDREWID']
         NAME = data['NAME']
 
-    with open(f'{COURSEDIR}/course-data.json', encoding='utf-8') as f:
+    with open(f'{COURSEDIR}/course-files.json', encoding='utf-8') as f:
         data = json.loads(f.read())
 
     # Next get assignments. These are in assignments/label.ipynb For students I
@@ -534,6 +534,7 @@ def admin():
 
     return render_template('admin.html',
                            COURSE=COURSE,
+                           COURSEDATA=COURSEDATA,
                            NAME=NAME, ANDREWID=ANDREWID,
                            ONLINE=ONLINE,
                            assignments4templates=list(zip(assignment_labels,
@@ -583,7 +584,7 @@ def grade_assignment(label):
     if request.args.get('shuffle'):
         random.shuffle(roster)
 
-    with open(f'{COURSEDIR}/course-data.json', encoding='utf-8') as f:
+    with open(f'{COURSEDIR}/course-files.json', encoding='utf-8') as f:
         data = json.loads(f.read())
 
     today = datetime.utcnow()
@@ -843,7 +844,7 @@ def return_one(andrewid, label):
                                                           'duedate')
     gstring += '\n' + "-" * len(gstring)
 
-    with open(f'{COURSEDIR}/course-data.json'.format(COURSEDIR), encoding='utf-8') as f:
+    with open(f'{COURSEDIR}/course-files.json'.format(COURSEDIR), encoding='utf-8') as f:
         data = json.loads(f.read())
         adata = {}
         for k, v in data['assignments'].items():
@@ -926,7 +927,7 @@ def return_all(label):
 
 def get_grades(andrewid):
     """Return a dictionary of grades"""
-    with open(f'{COURSEDIR}/course-data.json', encoding='utf-8') as f:
+    with open(f'{COURSEDIR}/course-files.json', encoding='utf-8') as f:
         data = json.loads(f.read())
 
     # Next get assignments. These are in assignments/label.ipynb For students I
@@ -1033,7 +1034,7 @@ def gradebook_one(andrewid):
     """Gather grades for andrewid."""
 
     grades = get_grades(andrewid)
-    with open('{}/course-data.json'.format(COURSEDIR), encoding='utf-8') as f:
+    with open('{}/course-files.json'.format(COURSEDIR), encoding='utf-8') as f:
         data = json.loads(f.read())
 
     # Next get assignments. These are in assignments/label.ipynb For students I
@@ -1056,7 +1057,7 @@ def gradebook_one(andrewid):
 @app.route('/gradebook')
 def gradebook():
 
-    with open('{}/course-data.json'.format(COURSEDIR), encoding='utf-8') as f:
+    with open('{}/course-files.json'.format(COURSEDIR), encoding='utf-8') as f:
         data = json.loads(f.read())
 
     # Next get assignments. These are in assignments/label.ipynb For students I
