@@ -3,3 +3,5 @@ __pycache__
 archive
 .ipynb_checkpoints
 techela.egg-info
+/course-data.json
+dist
