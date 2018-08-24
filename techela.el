@@ -2,6 +2,8 @@
 
 ;; These need to be defined in .dir-locals.el
 
+;; techela-label -  a string for the course label
+
 ;; techela-types - a list of assignment categories
 ;; techela-graders - a list of names
 ;; techela-rubrics - a list of rubrics
@@ -15,13 +17,36 @@
 (use-package ox-ipynb
   :load-path (lambda () (expand-file-name "ox-ipynb" scimax-dir)))
 
+(use-package json)
+
+(setq techela-label "f18-06623")
+
+;; Get the course data
+(url-copy-file
+ (format "https://raw.githubusercontent.com/jkitchin/techela/master/registered-courses/%s.json"
+	 techela-label)
+ (expand-file-name "course-data.json" (vc-root-dir))
+ t)
+
+(let* ((json-object-type 'alist)
+       (json-array-type 'list)
+       (data (json-read-file (expand-file-name "course-data.json" (vc-root-dir)))))
+
+  (setq techela-admin-box-path (expand-file-name (cdr (assoc 'local-box-path data)))
+	techela-categories (first (cdr (assoc 'categories data)))
+	techela-graders (cdr (assoc 'admin-names data))
+	techela-rubrics (cdr (assoc 'rubrics data))))
+
+
 
 
 (defun techela-assign ()
   "Export the current heading to an ipynb.
 It is assumed your org file is in the assignments directory. The
 ipynb will be named with the label corresponding to the heading
-you are in."
+you are in.
+
+If you tag an sections with noexport or solution the will be excluded."
   (interactive)
   (save-restriction
     (org-narrow-to-subtree)
@@ -33,10 +58,15 @@ you are in."
       (org-entry-put nil "POINTS" (read-string "Points: ")))
 
     (unless (org-entry-get nil "TYPE")
-      (org-entry-put nil "TYPE" (completing-read "Type: " techela-types)))
+      (org-entry-put nil "TYPE" (completing-read "Type: " techela-categories)))
 
     (unless (org-entry-get nil "RUBRIC")
-      (org-entry-put nil "RUBRIC" (completing-read "Rubric: " techela-rubrics)))
+      (let ((rubric-name (completing-read "Rubric: " (mapcar 'car techela-rubrics))))
+	(org-entry-put nil "RUBRIC" rubric-name)
+	(org-entry-put nil "RUBRIC_CATEGORIES"
+		       (s-join ", " (first (cdr (assoc (intern-soft rubric-name) techela-rubrics)))))
+	(org-entry-put nil "RUBRIC_WEIGHTS"
+		       (s-join ", " (mapcar 'number-to-string (second (cdr (assoc (intern-soft rubric-name) techela-rubrics))))))))
 
     (unless (org-entry-get nil "DUEDATE")
       (org-entry-put nil "DUEDATE" (concat (org-read-date t nil nil nil nil) " 23:59:59")))
@@ -50,17 +80,21 @@ you are in."
 	   (duedate (org-entry-get nil "DUEDATE"))
 	   (type (org-entry-get nil "TYPE"))
 	   (rubric (org-entry-get nil "RUBRIC"))
+	   (rubric-categories (org-entry-get nil "RUBRIC_CATEGORIES"))
+	   (rubric-weights (org-entry-get nil "RUBRIC_WEIGHTS"))
 	   (body (progn
 		   (org-end-of-meta-data t) (buffer-substring (point) (point-max))))
 	   (grader (org-entry-get nil "GRADER"))
 	   (org-file (concat label ".org"))
 	   (ipynb (concat label ".ipynb"))
-	   (content (s-format "#+OX-IPYNB-KEYWORD-METADATA: assignment points category rubric duedate grader
+	   (content (s-format "#+OX-IPYNB-KEYWORD-METADATA: assignment points category rubric rubric_categories rubric_weights duedate grader
 #+ASSIGNMENT: ${label}
 #+POINTS: ${points}
 #+DUEDATE: ${duedate}
 #+CATEGORY: ${type}
 #+RUBRIC: ${rubric}
+#+RUBRIC_CATEGORIES: ${rubric-categories}
+#+RUBRIC_WEIGHTS: ${rubric-weights}
 #+GRADER: ${grader}
 
 ${body}" 'aget (list (cons "label" label)
@@ -68,6 +102,8 @@ ${body}" 'aget (list (cons "label" label)
 		     (cons "duedate" duedate)
 		     (cons "type" type)
 		     (cons "rubric" rubric)
+		     (cons "rubric-categories" rubric-categories)
+		     (cons "rubric-weights" rubric-weights)
 		     (cons "body" body)
 		     (cons "grader" grader)))))
 
