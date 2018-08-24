@@ -105,7 +105,7 @@ When you get your graded assignment returned by email, save the attachment to th
   {% for fname, grade, grader in graded_assignments %}
   <tr>
     <td><a href="/graded-assignment/{{ fname }}">{{ fname }}</a></td>
-    <td>{{grade}}</td>
+    <td>{{grade|round(3)}}</td>
     <td>{{grader}}</td>
 
   </tr>
