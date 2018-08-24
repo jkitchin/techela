@@ -8,9 +8,9 @@ Jupyter.keyboard_manager.command_shortcuts.add_shortcut('c', {
      Jupyter.notebook.edit_mode();
 
      var kernel = Jupyter.notebook.kernel;
-     kernel.execute("import getpass; username=getpass.getuser(); print(username)",		       
-		    {iopub: {output: function(response) {                                
-			var resp = response.content.text;      
+     kernel.execute("import getpass; username=getpass.getuser(); print(username)",
+		    {iopub: {output: function(response) {
+			var resp = response.content.text;
 			console.log(response.content);
 			var comment = prompt("Comment: ");
 			var text = '<font color="red">' + resp + ": "+ comment + '</font>';
@@ -20,8 +20,8 @@ Jupyter.keyboard_manager.command_shortcuts.add_shortcut('c', {
 			cell.metadata.content = comment;
 			Jupyter.notebook.execute_cell();
 			Jupyter.notebook.command_mode();}}},
-		    {silent: false, 
-		     store_history: false, 
+		    {silent: false,
+		     store_history: false,
 		     stop_on_error: true})}});
 
 
@@ -89,13 +89,22 @@ Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
       else if (letter == 'R-')  {n=0.05}
       else if (letter == 'R--')  {n=0};
 	    return n};
-	
-     // I don't currently use this. I need to actually store a rubric in the metadata first. Another day perhaps.
-     // var rubric = Jupyter.notebook.metadata.org.RUBRIC
-     
-     var tech = prompt('Technical grade: ').toUpperCase();
-     var pres = prompt('Presentation grade: ').toUpperCase();
-     var grade = 0.7 * letter_to_number(tech) + 0.3 * letter_to_number(pres);
+
+     var rubric_categories = Jupyter.notebook.metadata.org.RUBRIC_CATEGORIES.split(", ")
+     var rubric_weights = Jupyter.notebook.metadata.org.RUBRIC_WEIGHTS.split(", ")
+     grade = 0.0;
+
+     for (i=0; i < rubric_categories.length; i++) {
+	 var promptstring = rubric[0][i] + ": ";
+	 var category_grade = prompt(promptstring).toUpperCase();
+	 grade += parseFloat(rubric_weights[i]) * letter_to_number(category_letter_grade);
+     }
+
+     // // for category in RUBRIC_CATEGORIES
+     // var tech = prompt('Technical grade: ').toUpperCase();
+     // var pres = prompt('Presentation grade: ').toUpperCase();
+     // // TODO: These need to come from the metadata
+     // var grade = 0.8 * letter_to_number(tech) + 0.2 * letter_to_number(pres);
 
      var lettergrade;
      if (grade == "none") {lettergrade="unfinished"}
@@ -120,16 +129,16 @@ Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
      else if (grade >= 0.10) {lettergrade="R"}
      else if (grade >= 0.05) {lettergrade="R-"}
      else {lettergrade = "R--"};
-     
+
      Jupyter.notebook.metadata.grade = {};
      Jupyter.notebook.metadata.grade.technical = tech;
      Jupyter.notebook.metadata.grade.presentation = pres;
      Jupyter.notebook.metadata.grade.overall = grade;
 
      var kernel = Jupyter.notebook.kernel;
-     kernel.execute("import getpass; username=getpass.getuser(); print(username)",		       
-		    {iopub: {output: function(response) {                                
-			var username = response.content.text;      
+     kernel.execute("import getpass; username=getpass.getuser(); print(username)",
+		    {iopub: {output: function(response) {
+			var username = response.content.text;
 
 			var cells = Jupyter.notebook.get_cells()
 			var N = cells.length
@@ -138,10 +147,10 @@ Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
 			Jupyter.notebook.select_next();
 			Jupyter.notebook.edit_mode();
 			var text = "Technical: " + String(tech) + "\n\nPresentation: " + String(pres) + "\n\nGrade: " + String(grade) + " (" + lettergrade + ")\n\n" + "Graded by: " + username;
-			
+
 			Jupyter.notebook.get_selected_cell().set_text(text);
 			Jupyter.notebook.to_markdown();
 			Jupyter.notebook.execute_cell();}}},
-		    {silent: false, 
-		     store_history: false, 
+		    {silent: false,
+		     store_history: false,
 		     stop_on_error: true});}});
