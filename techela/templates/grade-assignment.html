@@ -1,14 +1,14 @@
 <!doctype html>
-<title>S17 06-364 - Techela in a flask</title>
+<title>{{COURSE}} - Techela in a flask</title>
 <head>
-<script type="text/javascript" src="{{url_for('static', filename='jquery-latest.js')}}/"></script> 
+<script type="text/javascript" src="{{url_for('static', filename='jquery-latest.js')}}/"></script>
 <script type="text/javascript" src="{{url_for('static', filename='jquery.tablesorter.js')}}"></script>
 
 <script>
-  $(document).ready(function() 
-    { 
-        $("#grades").tablesorter({widgets:['zebra'], sortList:[[5, 0]]}); 
-    } 
+  $(document).ready(function()
+    {
+        $("#grades").tablesorter({widgets:['zebra'], sortList:[[5, 0]]});
+    }
   );
 </script>
 
@@ -17,7 +17,7 @@
 
 </head>
 
-<h1>S17 06-364 - Gradesheet for {{ label }}</h1>
+<h1>{{COURSE}} - Gradesheet for {{ label }}</h1>
 <a href="/admin">admin</a> <a href="/">Home</a>
 
 <a href="/return-all/{{ label }}">Return all assignments.</a>
@@ -41,7 +41,7 @@
     <td>{{d['first-name']}}</td>
     <td>{{d['last-name']}}</td>
     <td><a title="Click to send email" href="mailto:{{d['andrewid']}}@andrew.cmu.edu">{{d['andrewid']}}</a></td>
-    {% if exists(d['filename']) %}  
+    {% if exists(d['filename']) %}
     <td><a href="/grade/{{ d['andrewid'] }}/{{ label }}">{{d['andrewid']}}-{{d['label']}}.ipynb</a></td>
     <td>{{d['turned-in']}}</td>
     <td align="center">{{d['grade']}}</td>
@@ -56,11 +56,10 @@
     <td><font color="red">{{d['andrewid']}}-{{d['label']}}.ipynb is missing.</font></td>
     <td></td>
     <td></td>
-    <td></td>    
+    <td></td>
     <td></td>
     {% endif %}
       </tr>
   {% endfor %}
   </tbody>
 </table>
-
