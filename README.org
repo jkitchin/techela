@@ -33,7 +33,9 @@ d = {'title': 'Mathematical Modeling of Chemical Engineering Processes',
      'categories': [['homework', 'quiz', 'exam-1', 'exam-2', 'exam-3'],
                     [0.2, 0.25, 0.1, 0.2, 0.25]],
      'rubrics': {'default': [['technical', 'presentation'],
-                             [0.8, 0.2]]},
+                             [0.8, 0.2]],
+                 'just-technical': [['technical'],
+                                    [1.0]]},
      'local-box-path': '~/Box Sync/f18-06623'}
 
 with open('registered-courses/f18-06623.json', 'w') as f:

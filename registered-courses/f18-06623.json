@@ -44,6 +44,14 @@
                 0.8,
                 0.2
             ]
+        ],
+        "just-technical": [
+            [
+                "technical"
+            ],
+            [
+                1.0
+            ]
         ]
     },
     "local-box-path": "~/Box Sync/f18-06623"
