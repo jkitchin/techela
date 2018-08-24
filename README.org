@@ -30,6 +30,10 @@ d = {'title': 'Mathematical Modeling of Chemical Engineering Processes',
      'instructor-email': 'jkitchin@andrew.cmu.edu',
      'admin-names': ["John Kitchin", "Mingjie Liu", "Noriyuki Yoshio"],
      'admin-andrewids': ['jkitchin', 'mingjie1', 'nyoshio'],
+     'categories': [['homework', 'quiz', 'exam-1', 'exam-2', 'exam-3'],
+                    [0.2, 0.25, 0.1, 0.2, 0.25]],
+     'rubrics': {'default': [['technical', 'presentation'],
+                             [0.8, 0.2]]},
      'local-box-path': '~/Box Sync/f18-06623'}
 
 with open('registered-courses/f18-06623.json', 'w') as f:
@@ -180,6 +184,11 @@ You can put announcements into the announcements.org file, and then generate an 
 ** Lecture notes
 
 I prepare the lecture notes in org-mode, and then export them to ipython notebooks. When you are ready to make them available, you simply commit the notebook to the git repo and push it to github. This will automatically update the course-data.json file and the notes should become available the next time students open the course.
+
+You can specify keywords for the lecture to help students navigate the list of files.
+
+#+OX-IPYNB-KEYWORD-METADATA: keywords
+#+KEYWORDS: key1, key2
 
 ** Assignments/solutions
 
