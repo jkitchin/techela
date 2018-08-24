@@ -90,15 +90,25 @@ Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
       else if (letter == 'R--')  {n=0};
 	    return n};
 
+     Jupyter.notebook.metadata.grade = {};
+
      var rubric_categories = Jupyter.notebook.metadata.org.RUBRIC_CATEGORIES.split(", ")
      var rubric_weights = Jupyter.notebook.metadata.org.RUBRIC_WEIGHTS.split(", ")
      grade = 0.0;
+     var text = '';
 
      for (i=0; i < rubric_categories.length; i++) {
-	 var promptstring = rubric[0][i] + ": ";
-	 var category_grade = prompt(promptstring).toUpperCase();
-	 grade += parseFloat(rubric_weights[i]) * letter_to_number(category_letter_grade);
+	 var promptstring = rubric_categories[i] + ": ";
+	 var category_letter_grade = prompt(promptstring).toUpperCase();
+	 var category_grade = parseFloat(rubric_weights[i]) * letter_to_number(category_letter_grade);
+	 Jupyter.notebook.metadata.grade[rubric_categories[i]] = category_letter_grade
+	 grade += category_grade;
+	 text += rubric_categories[i].toUpperCase() + ': ' + category_letter_grade + "\n\n";
      }
+
+     text += "Overall: " + String(grade.toFixed(3)) + "\n\n"
+
+     Jupyter.notebook.metadata.grade.overall = grade;
 
      // // for category in RUBRIC_CATEGORIES
      // var tech = prompt('Technical grade: ').toUpperCase();
@@ -130,23 +140,17 @@ Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
      else if (grade >= 0.05) {lettergrade="R-"}
      else {lettergrade = "R--"};
 
-     Jupyter.notebook.metadata.grade = {};
-     Jupyter.notebook.metadata.grade.technical = tech;
-     Jupyter.notebook.metadata.grade.presentation = pres;
-     Jupyter.notebook.metadata.grade.overall = grade;
-
      var kernel = Jupyter.notebook.kernel;
      kernel.execute("import getpass; username=getpass.getuser(); print(username)",
 		    {iopub: {output: function(response) {
 			var username = response.content.text;
-
+			text += "\n\nGraded by: " + username;
 			var cells = Jupyter.notebook.get_cells()
 			var N = cells.length
 			Jupyter.notebook.select(N - 1)
 			Jupyter.notebook.insert_cell_below();
 			Jupyter.notebook.select_next();
 			Jupyter.notebook.edit_mode();
-			var text = "Technical: " + String(tech) + "\n\nPresentation: " + String(pres) + "\n\nGrade: " + String(grade) + " (" + lettergrade + ")\n\n" + "Graded by: " + username;
 
 			Jupyter.notebook.get_selected_cell().set_text(text);
 			Jupyter.notebook.to_markdown();
