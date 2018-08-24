@@ -188,8 +188,11 @@ def hello():
             gd = json.loads(f.read())
 
             graded_assignments += [[os.path.split(ipynb)[-1],
-                                    gd['metadata'].get('grade', {}).get('overall', None),
-                                    gd['metadata']['org'].get('GRADER', 'unknown')]]
+                                    gd['metadata'].get('grade',
+                                                       {}).get('overall',
+                                                               None),
+                                    gd['metadata']['org'].get('GRADER',
+                                                              'unknown')]]
 
     return render_template('hello.html',
                            COURSEDATA=COURSEDATA,
@@ -199,7 +202,9 @@ def hello():
                            ONLINE=ONLINE,
                            announcements=data['announcements'],
                            version=__version__,
-                           lectures=list(zip(lecture_labels, lecture_status, lecture_keywords)),
+                           lectures=list(zip(lecture_labels,
+                                             lecture_status,
+                                             lecture_keywords)),
                            assignments4templates=list(zip(assignment_labels,
                                                           assignment_paths,
                                                           assignment_status,
@@ -231,7 +236,7 @@ def about():
     try:
         import pycse
         pycse_ver = pycse.__version__
-    except:
+    except ModuleNotFoundError:
         pycse_ver = None
     return render_template('about.html',
                            **locals())
@@ -497,8 +502,9 @@ def admin():
                         for assignment in assignments]
     assignment_labels = [os.path.splitext(f)[0] for f in assignment_files]
     # this is where solutions should be
-    solutions = [os.path.join(os.path.expanduser(f"{COURSEDATA['local-box-path']}/solutions/"),
-                                                 f'{label}.ipynb')
+    p1 = os.path.expanduser(f"{COURSEDATA['local-box-path']}/solutions/")
+    solutions = [os.path.join(p1,
+                              f'{label}.ipynb')
                  for label in assignment_labels]
 
     duedates = [assignments[f]['duedate'] for f in assignments]
@@ -507,7 +513,8 @@ def admin():
 
     statuses = []
     for label in assignment_labels:
-        f = os.path.join(os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments"),
+        p1 = os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments")
+        f = os.path.join(p1,
                          label, "STATUS")
 
         if os.path.exists(f):
@@ -547,7 +554,8 @@ def admin():
 
 def get_roster():
     """Read roster and return a list of dictionaries for each student.
-The roster.csv file is just the file downloaded from s3, renamed to roster.csv."""
+The roster.csv file is just the file downloaded from s3, renamed to roster.csv.
+    """
     import csv
     roster_file = os.path.expanduser(f'{COURSEDATA["local-box-path"]}/roster.csv')
     with open(roster_file, encoding='utf-8') as f:
@@ -596,11 +604,11 @@ def grade_assignment(label):
     else:
         POSTDUE = False
 
-    submission_dir = os.path.expanduser(f"{COURSEDATA['local-box-path']}/submissions")
-    assignment_dir = os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments")
+    submission_dir = os.path.expanduser(f"{COURSEDATA['local-box-path']}/submissions")   # NOQA
+    assignment_dir = os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments")   # NOQA
     assignment_dir = '{}/{}'.format(assignment_dir, label)
 
-    assignment_archive_dir = os.path.expanduser(f"{COURSEDATA['local-box-path']}/"
+    assignment_archive_dir = os.path.expanduser(f"{COURSEDATA['local-box-path']}/"  # NOQA
                                                 'assignments-archive')
     assignment_archive_dir = '{}/{}'.format(assignment_archive_dir, label)
 
@@ -646,8 +654,8 @@ def grade_assignment(label):
             # Now we move SFILE to GFILE
             shutil.move(SFILE, GFILE)
 
-        # here the GFILE should exist. whether we update it depends. Let's check
-        # if it is graded. If we have not graded it, we might as well update it.
+        # here the GFILE should exist. whether we update it depends. Let's check  # NOQA
+        # if it is graded. If we have not graded it, we might as well update it.  # NOQA
         # Check for a grade and return timestamp
         # collect data in a dictionary
         d['filename'] = GFILE
@@ -691,19 +699,20 @@ def grade_assignment(label):
         plt.xlabel('Grade')
         plt.ylabel('Frequency')
         plt.xlim([0, 1])
-        plt.title('Grade distribution for {}\nMean={:1.2f}'.format(label, np.mean(numeric_grades)))
+        plt.title('Grade distribution for {}\nMean={:1.2f}'.format(label,
+                                                                   np.mean(numeric_grades)))  # NOQA
         png = BytesIO()
         plt.savefig(png)
         plt.close()
         png.seek(0)
         histogram = urllib.parse.quote(base64.b64encode(png.read()))
     else:
-        histogram=""
+        histogram = ""
 
     # Add this function so we can use it in a template
     app.jinja_env.globals.update(exists=os.path.exists)
 
-    status_file = os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments/{label}/STATUS")
+    status_file = os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments/{label}/STATUS")   # NOQA
 
     # if we don't have a status file create one. If we do have one, I don't
     # think it makes sense to change it since it should either be Collected or
@@ -713,6 +722,7 @@ def grade_assignment(label):
             f.write('Collected')
 
     return render_template('grade-assignment.html',
+                           COURSE=COURSE,
                            label=label,
                            histogram=histogram,
                            grade_data=grade_data)
@@ -721,7 +731,7 @@ def grade_assignment(label):
 @app.route('/grade/<andrewid>/<label>')
 def grade(andrewid, label):
     "Opens the file for andrewid and label."
-    assignment_dir = os.path.expanduser(f'{COURSEDATA["local-box-path"]}/assignments')
+    assignment_dir = os.path.expanduser(f'{COURSEDATA["local-box-path"]}/assignments')   # NOQA
     GFILE = os.path.join(assignment_dir,
                          label,
                          f'{andrewid}-{label}.ipynb')
@@ -751,7 +761,7 @@ def return_one(andrewid, label):
     """
     force = True if request.args.get('force') else False
 
-    assignment_dir = os.path.expanduser("{COURSEDATA['local-box-path']}/assignments")
+    assignment_dir = os.path.expanduser("{COURSEDATA['local-box-path']}/assignments")   # NOQA
     GFILE = os.path.join(assignment_dir,
                          label,
                          f'{andrewid}-{label}.ipynb')
@@ -806,7 +816,7 @@ def return_one(andrewid, label):
     comments = []
     for cell in j['cells']:
         if cell['metadata'].get('type', None) == 'comment':
-            comments.append('{0}. {1}'.format(i, cell['metadata'].get('content', '')))
+            comments.append('{0}. {1}'.format(i, cell['metadata'].get('content', '')))   # NOQA
             i += 1
 
     if comments:
@@ -827,7 +837,7 @@ def return_one(andrewid, label):
 
     # Now we sort by the duedate. This function gets the datetime object for an
     # assignment for sorting.
-    import operator
+
     def mydate(el):
         k, v = el
         dd = v['duedate']
@@ -844,15 +854,15 @@ def return_one(andrewid, label):
                                                           'duedate')
     gstring += '\n' + "-" * len(gstring)
 
-    with open(f'{COURSEDIR}/course-files.json'.format(COURSEDIR), encoding='utf-8') as f:
+    with open(f'{COURSEDIR}/course-files.json'.format(COURSEDIR),
+              encoding='utf-8') as f:
         data = json.loads(f.read())
         adata = {}
         for k, v in data['assignments'].items():
             adata[v['label']] = v
 
-
     for label, v in grades:
-        p = v['path'] # path to student file
+        p = v['path']  # path to student file
         dd = adata[label]['duedate']
         category = adata[label]['category']
         g = v.get('overall', 0.0)  # student grade
@@ -866,14 +876,16 @@ def return_one(andrewid, label):
             POSTDUE = False
 
         if POSTDUE and os.path.exists(p) and g is not None:
-            gstring += '\n{0:35s} {1:15.3f} {4:^8s} {2:15s} {3}'.format(label, g, category, dd, points)
+            gstring += '\n{0:35s} {1:15.3f} {4:^8s} {2:15s} {3}'.format(label, g, category, dd, points)  # NOQA
         elif POSTDUE and os.path.exists(p) and g is None:
-            gstring += '\n{0:35s} {1:>15s} {4:^8s} {2:15s} {3}'.format(label, 'not-graded', category, dd,
-                                                                      points)
+            gstring += '\n{0:35s} {1:>15s} {4:^8s} {2:15s} {3}'.format(label,
+                                                                       'not-graded', category, dd, # NOQA
+                                                                       points)
         elif POSTDUE:
-            gstring += '\n{0:35s} {1:>15s} {4:^8s} {2:15s} {3}'.format(label, 'missing', category, dd,
-                                                                      points)
-
+            gstring += '\n{0:35s} {1:>15s} {4:^8s} {2:15s} {3}'.format(label,
+                                                                       'missing', category,   # NOQA
+                                                                       dd,
+                                                                       points)
 
     body += '\n\nGrades\n======\n'
     body += gstring
@@ -916,7 +928,7 @@ def return_all(label):
         return_one(andrewid, label)
         time.sleep(1)
 
-    status_file = os.path.join(os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments/"),
+    status_file = os.path.join(os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments/"),   # NOQA
                                label, "STATUS")
 
     with open(status_file, 'w', encoding='utf-8') as f:
@@ -942,7 +954,7 @@ def get_grades(andrewid):
 
     assignment_labels = [os.path.splitext(f)[0] for f in assignment_files]
 
-    assignment_dir = os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments")
+    assignment_dir = os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments")   # NOQA
 
     duedates = [assignments[path]['duedate'] for path in assignment_paths]
 
@@ -950,10 +962,7 @@ def get_grades(andrewid):
 
     for label, dd in zip(assignment_labels, duedates):
         today = datetime.utcnow()
-        if "<" in dd:
-            d = datetime.strptime(dd, "<%Y-%m-%d %a>")
-        else:
-            d = datetime.strptime(dd, "%Y-%m-%d %H:%M:%S")
+        d = datetime.strptime(dd, "%Y-%m-%d %H:%M:%S")
 
         if (today - d).days >= 0:
             POSTDUE = True
