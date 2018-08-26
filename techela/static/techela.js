@@ -1,7 +1,39 @@
-Jupyter.keyboard_manager.command_shortcuts.add_shortcut('c', {
-    help : 'Add comment cell.',
+
+// ------------------------------------------------------------------
+
+var techela_add_check_handler = function (event)
+    {Jupyter.notebook.insert_cell_below();
+     Jupyter.notebook.select_next();
+     Jupyter.notebook.to_markdown();
+     Jupyter.notebook.edit_mode();
+
+     var kernel = Jupyter.notebook.kernel;
+     kernel.execute("import getpass; username=getpass.getuser(); print(username)",
+		    {iopub: {output: function(response) {
+			var resp = response.content.text;
+			console.log(response.content);
+			var text = '<font color="red"> ' + resp + ': ✓</font>';
+			var cell = Jupyter.notebook.get_selected_cell();
+			cell.set_text(text);
+			cell.metadata.type = "comment";
+			cell.metadata.content = "Check";
+			Jupyter.notebook.execute_cell();}}},
+		    {silent: false,
+		     store_history: false,
+		     stop_on_error: true})}
+
+var techela_add_check_action = {
+    help : 'Add comment cell with a checkmark in it.',
     help_index : 'zz',
-    handler : function (event)
+    handler : techela_add_check_handler }
+
+var add_check = Jupyter.actions.register(techela_add_check_action, 'Add check', 'techela');
+
+Jupyter.keyboard_manager.command_shortcuts.add_shortcut('k', add_check);
+
+// ------------------------------------------------------------------
+
+function techela_add_comment (event)
     {Jupyter.notebook.insert_cell_below();
      Jupyter.notebook.select_next();
      Jupyter.notebook.to_markdown();
@@ -22,49 +54,15 @@ Jupyter.keyboard_manager.command_shortcuts.add_shortcut('c', {
 			Jupyter.notebook.command_mode();}}},
 		    {silent: false,
 		     store_history: false,
-		     stop_on_error: true})}});
+		     stop_on_error: true});}
 
+var add_comment = Jupyter.actions.register(techela_add_comment, 'Add comment', 'techela');
 
-Jupyter.keyboard_manager.command_shortcuts.add_shortcut('k', {
-    help : 'Add comment cell with a checkmark in it.',
-    help_index : 'zz',
-    handler : function (event)
-    {Jupyter.notebook.insert_cell_below();
-     Jupyter.notebook.select_next();
-     Jupyter.notebook.to_markdown();
-     Jupyter.notebook.edit_mode();
+Jupyter.keyboard_manager.command_shortcuts.add_shortcut('c', add_comment);
 
-     var kernel = Jupyter.notebook.kernel;
-     kernel.execute("import getpass; username=getpass.getuser(); print(username)",
-		    {iopub: {output: function(response) {
-			var resp = response.content.text;
-			console.log(response.content);
-			var text = '<font color="red"> ' + resp + ': ✓</font>';
-			var cell = Jupyter.notebook.get_selected_cell();
-			cell.set_text(text);
-			cell.metadata.type = "comment";
-			cell.metadata.content = "Check";
-			Jupyter.notebook.execute_cell();}}},
-		    {silent: false,
-		     store_history: false,
-		     stop_on_error: true})}});
+// ------------------------------------------------------------------
 
-
-Jupyter.keyboard_manager.command_shortcuts.add_shortcut('q', {
-    help : 'Save, delete session and close the tab.',
-    help_index : 'zz',
-    handler : function (event) {
-	Jupyter.notebook.save_notebook();
-	Jupyter.notebook.save_checkpoint();
-        Jupyter.notebook.session.delete();
-	window.close();
-        return false; }});
-
-
-Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
-    help : 'Add grade',
-    help_index : 'zz',
-    handler : function (event)
+function techela_add_grade (event)
     {function letter_to_number(letter)
      {var n = "none";
       if (letter == 'A++')  {n=1.0}
@@ -110,12 +108,6 @@ Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
 
      Jupyter.notebook.metadata.grade.overall = grade;
 
-     // // for category in RUBRIC_CATEGORIES
-     // var tech = prompt('Technical grade: ').toUpperCase();
-     // var pres = prompt('Presentation grade: ').toUpperCase();
-     // // TODO: These need to come from the metadata
-     // var grade = 0.8 * letter_to_number(tech) + 0.2 * letter_to_number(pres);
-
      var lettergrade;
      if (grade == "none") {lettergrade="unfinished"}
      else if (grade == 1.0) {lettergrade="A++"}
@@ -157,4 +149,31 @@ Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', {
 			Jupyter.notebook.execute_cell();}}},
 		    {silent: false,
 		     store_history: false,
-		     stop_on_error: true});}});
+		     stop_on_error: true});};
+
+var techela_add_grade_action = {
+    help : 'Add grade',
+    help_index : 'zz',
+    handler : techela_add_grade };
+
+var add_grade = Jupyter.actions.register(techela_add_grade_action, 'Add grade', 'techela');
+
+Jupyter.keyboard_manager.command_shortcuts.add_shortcut('g', add_grade);
+
+// ------------------------------------------------------------------
+
+function techela_save_and_quit (event) {
+	Jupyter.notebook.save_notebook();
+	Jupyter.notebook.save_checkpoint();
+        Jupyter.notebook.session.delete();
+	window.close();
+    return false; };
+
+var techela_quit_action = {
+    help : 'Save, delete session and close the tab.',
+    help_index : 'zz',
+    handler : save_quit };
+
+var save_quit = Jupyter.actions.register(techela_save_and_quit, 'Save and quit', 'techela');
+
+Jupyter.keyboard_manager.command_shortcuts.add_shortcut('q', save_quit);

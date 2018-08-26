@@ -82,8 +82,9 @@ If you tag an sections with noexport or solution the will be excluded."
 	   (rubric (org-entry-get nil "RUBRIC"))
 	   (rubric-categories (org-entry-get nil "RUBRIC_CATEGORIES"))
 	   (rubric-weights (org-entry-get nil "RUBRIC_WEIGHTS"))
-	   (body (progn
-		   (org-end-of-meta-data t) (buffer-substring (point) (point-max))))
+	   (body (save-excursion
+		   (org-end-of-meta-data t)
+		   (buffer-substring (point) (point-max))))
 	   (grader (org-entry-get nil "GRADER"))
 	   (org-file (concat label ".org"))
 	   (ipynb (concat label ".ipynb"))
