@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='techela',
-      version='1.0.2',
+      version='1.0.3',
       description='Utilities for techela.',
       url='http://github.com/jkitchin/techela',
       author='John Kitchin',
