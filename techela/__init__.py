@@ -579,7 +579,10 @@ def roster():
         data = json.loads(f.read())
         ANDREWID = data['ANDREWID']
 
+    admin_emails = ','.join([x + '@andrew.cmu.edu'
+                             for x in COURSEDATA['admin-andrewids']])
     return render_template('roster.html',
+                           admin_emails=admin_emails,
                            COURSE=COURSE,
                            ANDREWID=ANDREWID,
                            roster=get_roster())
