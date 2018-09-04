@@ -24,6 +24,9 @@
 <br><br>
 <img src="data:image/png;base64,{{histogram}}">
 <br>
+
+<a href="/open-for-grading/{{label}}">Open 5 notebooks to grade</a>
+<br>
 <table id="grades" border="1" class=tablesorter>
   <thead>
     <th>First Name</th>
@@ -44,7 +47,11 @@
     {% if exists(d['filename']) %}
     <td><a href="/grade/{{ d['andrewid'] }}/{{ label }}">{{d['andrewid']}}-{{d['label']}}.ipynb</a></td>
     <td>{{d['turned-in']}}</td>
+    {% if d['grade'] %}
+    <td align="center">{{d['grade']|round(3)}}</td>
+    {% else %}
     <td align="center">{{d['grade']}}</td>
+    {% endif %}
     {% if d['grade'] %}
     <td><a href="/return/{{ d['andrewid'] }}/{{ label }}?force=True">Return</a></td>
     <td>{{d['returned']}}</td>
