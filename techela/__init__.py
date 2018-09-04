@@ -370,7 +370,8 @@ def open_assignment(label):
 
 @app.route("/graded-assignment/<fname>")
 def open_graded_assignment(fname):
-    """Open the assignment FNAME"""
+    """Open the assignment FNAME.
+    It is in the graded-assignments directory."""
 
     fname = COURSEDIR + f'graded-assignments/{fname}'
 
