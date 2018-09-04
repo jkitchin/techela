@@ -1,0 +1,17 @@
+<!doctype html>
+<title> Information about {{COURSE}}</title>
+<head></head>
+
+{{COURSEDATA['semester']}} {{COURSEDATA['year']}} <b>{{COURSEDATA['title']}}</b>
+<br>
+<br>
+Instructor: {{COURSEDATA['instructor']}} (<a href="mailto:{{COURSEDATA['instructor-email']}}">{{COURSEDATA['instructor-email']}}</a>)
+<br>
+<br>
+Course url: <a href="{{COURSEDATA['course-url']}}">{{COURSEDATA['course-url']}}</a>
+<br>
+<br>
+Assignment email: <a href="mailto:{{COURSEDATA['submit-email']}}">{{COURSEDATA['submit-email']}}</a>
+<br>
+<br>
+{{COURSEDATA}}

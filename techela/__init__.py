@@ -572,6 +572,13 @@ The roster.csv file is just the file downloaded from s3, renamed to roster.csv.
     return roster_entries[1:]
 
 
+@app.route('/course-info')
+def course_info():
+    "Show course info."
+    return render_template('course-info.html',
+                           COURSEDATA=COURSEDATA)
+
+
 @app.route('/roster')
 def roster():
     "Render roster page"
