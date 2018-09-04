@@ -19,7 +19,7 @@
 
 <h1>{{COURSE}} - Roster</h1>
 
-<a href="mailto:{{ANDREWID}}@andrew.cmu.edu?cc=jkitchin@andrew.cmu.edu&bcc={% for d in roster[1:]%}{{d['Email']}}{% if not loop.last %}{{','}}{% endif %}{% endfor %}&subject=[{{COURSE}}]">Email class</a>
+<a href="mailto:{{ANDREWID}}@andrew.cmu.edu?cc={{admin_emails}}&bcc={% for d in roster[1:]%}{{d['Email']}}{% if not loop.last %}{{','}}{% endif %}{% endfor %}&subject=[{{COURSE}}]">Email class</a>
 
 
 <table class=tablesorter>
