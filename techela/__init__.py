@@ -754,6 +754,30 @@ def grade(andrewid, label):
     return ('', 204)
 
 
+@app.route('/open-for-grading/<label>')
+def open_for_grading(label, n=5):
+    "Open N ungraded LABEL assignments for grading."
+    assignment_dir = os.path.expanduser(f'{COURSEDATA["local-box-path"]}/assignments') # NOQA
+    # Get a list of ungraded notebooks
+    all_ipynb = glob.glob(assignment_dir + '/' + label + '/*.ipynb')
+    ungraded = []
+    for ipynb in all_ipynb:
+        with open(ipynb) as f:
+            data = json.loads(f.read())
+            if 'grade' not in data['metadata']:
+                ungraded += [ipynb]
+    random.shuffle(ungraded)
+
+    for i in range(min(n, len(ungraded))):
+        # Now open the notebooks.
+        cmd = ["jupyter", "notebook", ungraded[i]]
+        print( f'Running "{cmd}")')
+        subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         stdin=subprocess.PIPE)
+    return ('', 204)
+
+
 @app.route('/return/<andrewid>/<label>')
 def return_one(andrewid, label):
     """Return an assignment by email.
