@@ -454,6 +454,12 @@ def submit_post():
             s.login(ANDREWID, password)
         except smtplib.SMTPAuthenticationError:
             print('caught error for', label)
+            # Remove turned in
+            with open(fname, encoding='utf-8') as f:
+                j = json.loads(f.read())
+            del j['metadata']['TURNED-IN']
+            with open(fname, 'w', encoding='utf-8') as f:
+                f.write(json.dumps(j))
             return render_template("password_error.html", label=label)
 
         s.send_message(msg)
