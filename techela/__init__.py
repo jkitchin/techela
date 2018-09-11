@@ -784,7 +784,6 @@ def open_for_grading(label, n=5):
             if 'grade' not in data['metadata']:
                 ungraded += [ipynb]
     random.shuffle(ungraded)
-
     for i in range(min(n, len(ungraded))):
         # Now open the notebooks.
         cmd = ["jupyter", "notebook", ungraded[i]]
@@ -802,7 +801,7 @@ def return_one(andrewid, label):
     """
     force = True if request.args.get('force') else False
 
-    assignment_dir = os.path.expanduser("{COURSEDATA['local-box-path']}/assignments")   # NOQA
+    assignment_dir = os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments")   # NOQA
     GFILE = os.path.join(assignment_dir,
                          label,
                          f'{andrewid}-{label}.ipynb')
@@ -979,7 +978,7 @@ def return_all(label):
 
 
 def get_grades(andrewid):
-    """Return a dictionary of grades"""
+    """Return a dictionary of grades for andrewid."""
     with open(f'{COURSEDIR}/course-files.json', encoding='utf-8') as f:
         data = json.loads(f.read())
 
@@ -1005,35 +1004,32 @@ def get_grades(andrewid):
         today = datetime.utcnow()
         d = datetime.strptime(dd, "%Y-%m-%d %H:%M:%S")
 
+        # We only look at assignments that are post due
         if (today - d).days >= 0:
-            POSTDUE = True
-        else:
-            POSTDUE = False
+            # the student file
+            sfile = '{assignment_dir}/{label}/{andrewid}-{label}.ipynb'.format(**locals())
 
-        # the student file
-        sfile = '{assignment_dir}/{label}/{andrewid}-{label}.ipynb'.format(**locals())
-
-        if os.path.exists(sfile):
-            with open(sfile, encoding='utf-8') as f:
-                j = json.loads(f.read())
-                if j['metadata'].get('grade', None):
-                    grades[label] = {'andrewid': andrewid,
-                                     'path': sfile,
-                                     'technical': j['metadata']['grade']['technical'],
-                                     'presentation': j['metadata']['grade']['presentation'],
-                                     'overall': j['metadata']['grade']['overall'],
-                                     'category': assignments['assignments/{}.ipynb'.format(label)]['category'],
-                                     'points': assignments['assignments/{}.ipynb'.format(label)]['points'],
-                                     'duedate': assignments['assignments/{}.ipynb'.format(label)]['duedate']}
-        else:
-            grades[label] = {'andrewid': andrewid,
-                             'technical': None,
-                             'presentation': None,
-                             'overall': None,
-                             'category': assignments['assignments/{}.ipynb'.format(label)]['category'],
-                             'points': assignments['assignments/{}.ipynb'.format(label)]['points'],
-                             'duedate': assignments['assignments/{}.ipynb'.format(label)]['duedate'],
-                             'path': sfile}
+            if os.path.exists(sfile):
+                with open(sfile, encoding='utf-8') as f:
+                    j = json.loads(f.read())
+                    if j['metadata'].get('grade', None):
+                        grades[label] = {'andrewid': andrewid,
+                                         'path': sfile,
+                                         'technical': j['metadata']['grade']['technical'],
+                                         'presentation': j['metadata']['grade']['presentation'],
+                                         'overall': j['metadata']['grade']['overall'],
+                                         'category': assignments['assignments/{}.ipynb'.format(label)]['category'],
+                                         'points': assignments['assignments/{}.ipynb'.format(label)]['points'],
+                                         'duedate': assignments['assignments/{}.ipynb'.format(label)]['duedate']}
+            else:
+                grades[label] = {'andrewid': andrewid,
+                                 'technical': None,
+                                 'presentation': None,
+                                 'overall': None,
+                                 'category': assignments['assignments/{}.ipynb'.format(label)]['category'],
+                                 'points': assignments['assignments/{}.ipynb'.format(label)]['points'],
+                                 'duedate': assignments['assignments/{}.ipynb'.format(label)]['duedate'],
+                                 'path': sfile}
 
     # add name
     roster = get_roster()
@@ -1046,10 +1042,12 @@ def get_grades(andrewid):
             break
 
     # Compute overall grade
-    categories = {'homework': 0.15,
-                  'exam1': 0.2,
-                  'exam2': 0.3,
-                  'final': 0.35}
+    # these are the categories and weights
+    categories = dict(list(zip(*COURSEDATA['categories'])))
+    # categories = {'homework': 0.15,
+    #               'exam1': 0.2,
+    #               'exam2': 0.3,
+    #               'final': 0.35}
 
     overall_possible_points = 0
     overall_earned_points = 0
@@ -1058,22 +1056,27 @@ def get_grades(andrewid):
             continue
         cat = grades[key]['category']
 
-        GRADED = False
-        f = os.path.join(os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments"),
-                         key, "STATUS")
-        if os.path.exists(f):
-            with open(f, encoding='utf-8') as tf:
-                status = tf.read()
-                if status == 'Returned':
-                    GRADED = True
+        possible_points = int(grades[key].get('points', 0) or 0)
+        overall_grade = float(grades[key]['overall'] or 0.0)
 
-        if POSTDUE and GRADED:
-            possible_points = int(grades[key].get('points', 0) or 0)
-            overall_grade = float(grades[key]['overall'] or 0.0)
+        overall_earned_points += overall_grade * possible_points * categories[cat]
+        overall_possible_points += possible_points * categories[cat]
+        # GRADED = False
+        # f = os.path.join(os.path.expanduser(f"{COURSEDATA['local-box-path']}/assignments"),
+        #                  key, "STATUS")
+        # if os.path.exists(f):
+        #     with open(f, encoding='utf-8') as tf:
+        #         status = tf.read()
+        #             print(status)
+        #             if status == 'Returned':
+        #                 GRADED = True
+        #     print(f, os.path.exists(f), 'PD', POSTDUE, 'GRaded: ', GRADED)
+        #     if POSTDUE and GRADED:
+        #         possible_points = int(grades[key].get('points', 0) or 0)
+        #         overall_grade = float(grades[key]['overall'] or 0.0)
 
-            overall_possible_points += possible_points * categories[cat]
-
-            overall_earned_points += overall_grade * possible_points * categories[cat]
+        #         overall_earned_points += overall_grade * possible_points * categories[cat]
+        #         overall_possible_points += possible_points * categories[cat]
 
     grades['course-overall-grade'] = overall_earned_points / overall_possible_points
     return grades
